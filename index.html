@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 300px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Image Recognition</h1>
+    <form id="uploadForm">
+        <input type="file" id="imageInput" accept="image/*" required />
+        <button type="submit">Upload and Predict</button>
+    </form>
+    <div id="output">
+        <p id="prediction"></p>
+        <img id="preview" src="" alt="Uploaded Image" />
+    </div>
+
+    <script>
+        const form = document.getElementById("uploadForm");
+        const imageInput = document.getElementById("imageInput");
+        const predictionElement = document.getElementById("prediction");
+        const previewElement = document.getElementById("preview");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const file = imageInput.files[0];
+            if (!file) {
+                predictionElement.textContent = "Please select an image.";
+                return;
+            }
+
+            // Show a preview of the image
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewElement.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Prepare the request
+            const formData = new FormData();
+            formData.append("file", file);
+
+            predictionElement.textContent = "Processing...";
+
+            // Send the request to the backend
+            try {
+                const response = await fetch("http://127.0.0.1:8000/predict/", {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await response.json();
+                predictionElement.textContent = `Prediction: ${data.prediction}`;
+            } catch (error) {
+                predictionElement.textContent = "An error occurred. Please try again.";
+                console.error("Error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
